@@ -3,9 +3,11 @@ import { validateLogin } from '../utils/validation'
 import api from '../services/axios'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
+import { useProfileContext } from '../context/ProfileContext'
 
 export const useLogin = () => {
   const navigate = useNavigate()
+  const {fetchUser} = useProfileContext()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -51,6 +53,7 @@ export const useLogin = () => {
       localStorage.setItem('token', res.data.token)
       console.log('login success:', res)
       toast.success('Login Successfully')
+      fetchUser()
       navigate('/dashboard')
     } catch (error) {
       toast.error(

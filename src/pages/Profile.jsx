@@ -8,15 +8,16 @@ import { CiEdit } from 'react-icons/ci'
 import '../styles/profile.css'
 import { FaSave } from 'react-icons/fa'
 import { MdOutlineCancel } from 'react-icons/md'
+
 function Profile() {
   const navigate = useNavigate()
 
   const {
     errors,
-    details,
+    profile,
     formData,
     loading,
-    error,
+    saving,
     isEditing,
     startEdit,
     cancelEdit,
@@ -24,16 +25,17 @@ function Profile() {
     saveProfile,
     isChanged,
   } = useProfile()
-  if (loading && !isEditing) {
+
+  if (loading) {
     return (
       <div className="profile-loading">
-        <ClipLoader size={40} color="#4f46e5"></ClipLoader>
-        Loading Profile...
+        <ClipLoader size={40} color="#4f46e5" />
+        Loading profile...
       </div>
     )
   }
-  if (error) {
-    return <div className="profile-error">{error}</div>
+  if (!profile) {
+    return <div className="profile-error">Profile not found</div>
   }
   return (
     <div className="profile-page">
@@ -42,24 +44,25 @@ function Profile() {
           err={errors.name}
           label="Full Name"
           name="name"
-          value={isEditing ? formData.name : details.name}
+          value={isEditing ? formData.name : profile.name}
           onChange={handleChange}
           disabled={!isEditing}
         />
-        <Input label="Email" name="email" value={details.email} disabled />
+        <Input label="Email" value={profile.email} disabled />
         <Input
           label="Age"
           type="number"
           name="age"
-          value={isEditing ? formData.age : details.age || ''}
+          value={isEditing ? formData.age : profile.age || ''}
           onChange={handleChange}
           disabled={!isEditing}
+          err={errors.age}
         />
         <div className="input-group">
           <label>Gender</label>
           <select
             name="gender"
-            value={isEditing ? formData.gender : details.gender || ''}
+            value={isEditing ? formData.gender : profile.gender || ''}
             onChange={handleChange}
             disabled={!isEditing}
           >
@@ -68,21 +71,22 @@ function Profile() {
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-          <small className="error">{'\u00A0'}</small>
+          <small className="error">{errors.gender || '\u00A0'}</small>
         </div>
         <div className="profile-action">
           {isEditing ? (
             <>
               <Button
                 type="button"
-                disabled={!isChanged}
+                disabled={!isChanged || saving}
                 onClick={saveProfile}
-                isLoading={loading}
+                isLoading={saving}
               >
                 <FaSave />
                 Save
               </Button>
-              <Button type="button" onClick={cancelEdit} disabled={loading}>
+
+              <Button type="button" onClick={cancelEdit} disabled={saving}>
                 <MdOutlineCancel />
                 Cancel
               </Button>

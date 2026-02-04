@@ -2,59 +2,44 @@ import { useEffect, useState } from 'react'
 import api from '../services/axios'
 import { toast } from 'react-toastify'
 import { validateProfileUpdate } from '../utils/validation'
-export const useProfile = () => {
-  const [errors, setErrors] = useState({})
+import { useProfileContext } from '../context/ProfileContext'
 
-  const [details, setDetails] = useState({
-    name: '',
-    age: '',
-    gender: '',
-    email: '',
-  })
+export const useProfile = () => {
+  const { profile, setProfile, loading } = useProfileContext()
+  const [errors, setErrors] = useState({})
   const [formData, setFormData] = useState({
     name: '',
     age: '',
     gender: '',
   })
-  const isChanged =
-    formData.name !== details.name ||
-    formData.age !== details.age ||
-    formData.gender !== details.gender
   const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [saving, setSaving] = useState(false)
+
   useEffect(() => {
-    fetchDetails()
-  }, [])
-  const fetchDetails = async () => {
-    try {
-      setLoading(true)
-      const result = await api.get('/auth/details')
-      const profile = result.data.payload
-      // console.log(result.data.payload)
-      setDetails(profile)
+    if (profile) {
       setFormData({
         name: profile.name || '',
         age: profile.age || '',
         gender: profile.gender || '',
       })
-    } catch (error) {
-      console.log('error while fetch the data', error)
-      setError('Failed to fetch the details')
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [profile])
+  const isChanged =
+    formData.name !== profile?.name ||
+    formData.age !== profile?.age ||
+    formData.gender !== profile?.gender
   const startEdit = () => {
     setIsEditing(true)
   }
   const cancelEdit = () => {
     setErrors({})
-    setFormData({
-      name: details.name,
-      age: details.age,
-      gender: details.gender,
-    })
+    if (profile) {
+      setFormData({
+        name: profile.name || '',
+        age: profile.age || '',
+        gender: profile.gender || '',
+      })
+    }
     setIsEditing(false)
   }
 
@@ -65,6 +50,8 @@ export const useProfile = () => {
   }
 
   const saveProfile = async () => {
+    if (!isChanged) return
+
     const validationError = validateProfileUpdate(formData)
     if (Object.keys(validationError).length > 0) {
       setErrors(validationError)
@@ -72,10 +59,10 @@ export const useProfile = () => {
     }
     setErrors({})
     try {
-      setLoading(true)
+      setSaving(true)
       await api.put('/auth/profile', formData)
       toast.success('Profile Updated Successfully')
-      setDetails(prev => ({ ...prev, ...formData }))
+      setProfile(prev => ({ ...prev, ...formData }))
       setIsEditing(false)
     } catch (error) {
       console.log('update profile error:', error)
@@ -86,13 +73,13 @@ export const useProfile = () => {
       )
       setIsEditing(false)
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
   return {
-    details,
+    profile,
+    saving,
     loading,
-    error,
     formData,
     startEdit,
     cancelEdit,

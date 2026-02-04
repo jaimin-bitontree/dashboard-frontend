@@ -5,10 +5,13 @@ import { useNavigate } from 'react-router-dom'
 import '../styles/dashboard.css'
 import { CgProfile } from 'react-icons/cg'
 import { RiLogoutCircleLine } from 'react-icons/ri'
+import { useProfileContext } from '../context/ProfileContext'
 function Dashboard() {
   const navigate = useNavigate()
+  const{profile,setProfile}=useProfileContext()
   const handleLogout = () => {
     localStorage.removeItem('token')
+    setProfile(null)
     navigate('/login', { replace: true })
   }
   return (
@@ -30,7 +33,7 @@ function Dashboard() {
       </nav>
 
       <main className="dashboard-content">
-        <p>Welcome to your dashboard!</p>
+        <p>Hello {profile?.name} Welcome to your dashboard!</p>
       </main>
     </>
   )

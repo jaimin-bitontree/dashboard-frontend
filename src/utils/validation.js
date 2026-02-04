@@ -2,6 +2,22 @@ const nameRegex = /^[A-Za-z]+( [A-Za-z]+)*$/
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex =
   /^(?=\S{8,}$)(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/
+const validateAge = (value, message) => {
+  if (value === '' || value === null || value === undefined) {
+    return message
+  }
+  const age = Number(value)
+  if (Number.isNaN(age)) {
+    return 'Age must be a number'
+  }
+  if (age <= 0) {
+    return 'Age must be greater than 0'
+  }
+  if (age > 120) {
+    return 'Age must be less than or equal to 120'
+  }
+  return null
+}
 
 const validateRequired = (value, message) => {
   if (!value?.trim()) return message
@@ -114,6 +130,7 @@ export const validateForgotPassword = data => {
 
 export const validateProfileUpdate = data =>{
   const errors={}
+  errors.age=validateAge(data.age,"Age is required")
   errors.name=validateRequired(data.name,'name is required') || validateRegex(data.name,nameRegex,'Only alphabets are allowed')
   return cleanErrors(errors)
 }
